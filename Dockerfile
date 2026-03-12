@@ -1,39 +1,22 @@
-FROM node:alpine 
+# syntax=docker/dockerfile:1
+FROM node:18-alpine
 
-  
+# Install build dependencies for native modules like sqlite3
+RUN apk add --no-cache python3 g++ make
 
-# Create and set the working directory 
+WORKDIR /app
 
-WORKDIR /usr/src/app 
+# Copy dependency files first (better Docker caching)
+COPY package*.json ./
 
-  
+# Install production dependencies
+RUN npm install --omit=dev
 
-# Copy package.json and package-lock.json first to leverage Docker cache 
+# Copy the rest of the application
+COPY . .
 
-COPY package*.json ./ 
+# Expose the app port
+EXPOSE 3000
 
-  
-
-# Install only production dependencies for a smaller image 
-
-RUN npm install --only=production 
-
-  
-
-# Copy the rest of the application source code 
-
-# Note: node_modules and .env should be excluded via .dockerignore 
-
-COPY . . 
-
-  
-
-# The application runs on port 3000 
-
-EXPOSE 3000 
-
-  
-
-# Start the application 
-
-CMD [ "node", "app.js" ] 
+# Start the application
+CMD ["node", "src/index.js"]
