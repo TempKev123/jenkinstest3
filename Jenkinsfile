@@ -10,7 +10,7 @@ pipeline {
 
         DOCKER_HUB_USER = 'tempkev123' 
 
-        IMAGE_NAME = 'test-todo-app' 
+        IMAGE_NAME = 'todo-app-jenkins' 
 
         // This ID must match the Credential ID created in Jenkins (Username with Password) 
 
