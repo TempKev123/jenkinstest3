@@ -17,7 +17,7 @@ pipeline {
         DOCKER_HUB_CREDS = 'docker-hub-credentials-test' 
 
     } 
-
+    
     stages {
 
         stage('Build') {
