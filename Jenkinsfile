@@ -1,18 +1,16 @@
 pipeline { 
 
-    agent any 
+    agent any
 
-  
+    environment {
 
-    environment { 
+        // Replace with your actual Docker Hub username
 
-        // Replace with your actual Docker Hub username 
+        DOCKER_HUB_USER = 'tempkev123'
 
-        DOCKER_HUB_USER = 'tempkev123' 
+        IMAGE_NAME = 'todo-app-jenkins'
 
-        IMAGE_NAME = 'todo-app-jenkins' 
-
-        // This ID must match the Credential ID created in Jenkins (Username with Password) 
+        // This ID must match the Credential ID created in Jenkins (Username with Password)
 
         DOCKER_HUB_CREDS = 'docker-hub-credentials-test' 
 
