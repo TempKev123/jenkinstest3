@@ -18,94 +18,62 @@ pipeline {
 
     } 
 
-  
+    stages {
 
-    stages { 
+        stage('Build') {
+            steps {
+                echo 'Building the application...'
 
-        stage('Build') { 
+                // Install dependencies
+                sh 'npm install'
+            }
+        }
 
-            steps { 
+        stage('Test') {
+            steps {
+                echo 'Running unit tests...'
 
-                echo 'Building the application...' 
+                // If tests fail here, the pipeline will stop automatically
+                sh 'npm test'
+            }
+        }
 
-                // Install dependencies 
+        stage('Containerize') {
+            steps {
+                echo 'Creating Docker image...'
 
-                sh 'npm install' 
+                // Build Docker image
+                sh "docker build -t ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest ."
+            }
+        }
 
-            } 
+        stage('Push') {
+            steps {
+                echo 'Logging into Docker Hub and pushing image...'
 
-        } 
+                // Use Jenkins credentials instead of hardcoding password
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: "${DOCKER_HUB_CREDS}",
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
 
-  
+                    sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
+                    sh "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest"
 
-        stage('Test') { 
+                }
+            }
+        }
+    }
 
-            steps { 
+    post {
+        always {
+            echo 'Cleaning up workspace...'
 
-                echo 'Running unit tests...' 
-
-                // If tests fail here, the pipeline will stop automatically 
-
-                sh 'npm test' 
-
-            } 
-
-        } 
-
-  
-
-        stage('Containerize') { 
-
-            steps { 
-
-                echo 'Creating Docker image...' 
-
-                // Build the image using the Dockerfile in the root directory 
-
-                sh "docker build -t ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest ." 
-
-            } 
-
-        } 
-
-  
-
-        stage('Push') { 
-
-            steps { 
-
-                echo 'Logging into Docker Hub and pushing image...' 
-
-                // Using Jenkins Credentials Provider to avoid hardcoding passwords 
-
-                withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDS}", passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) { 
-
-                    sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin" 
-
-                    sh "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest" 
-
-                } 
-
-            } 
-
-        } 
-
-    } 
-
-  
-
-    post { 
-
-        always { 
-
-            echo 'Cleaning up workspace...' 
-
-            // Optional: remove the local image to save disk space on Jenkins node 
-
-            sh "docker rmi ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest || true" 
-
-        } 
-
-    } 
-
-} 
+            // Remove image to save disk space
+            sh "docker rmi ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest || true"
+        }
+    }
+}
