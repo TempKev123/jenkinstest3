@@ -7,8 +7,6 @@ todo.db
 yarn-error.log
 .env
 README.md
-Dockerfile
-Jenkinsfile
 Docker_file.txt
 .git
 .gitignore
